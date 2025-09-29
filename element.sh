@@ -6,7 +6,8 @@ then
   echo "Please provide an element as an argument."
   exit
 fi
-# Handle atomic number look up
+
+# Check if input is atomic number
 if [[ $1 =~ ^[0-9]+$ ]]
 then
   RESULT=$($PSQL "SELECT atomic_number, name, symbol, type, atomic_mass, melting_point_celsius, boiling_point_celsius
@@ -14,17 +15,16 @@ then
     JOIN properties USING(atomic_number)
     JOIN types USING(type_id)
     WHERE atomic_number=$1;")
-fi
-# Handle name and symbol lookup
-if [[ -z $RESULT ]]
-then
+else
+  # Check if input is symbol or name
   RESULT=$($PSQL "SELECT atomic_number, name, symbol, type, atomic_mass, melting_point_celsius, boiling_point_celsius
     FROM elements
     JOIN properties USING(atomic_number)
     JOIN types USING(type_id)
     WHERE symbol='$1' OR name='$1';")
 fi
-#Handle output + not found
+
+# If no result found
 if [[ -z $RESULT ]]
 then
   echo "I could not find that element in the database."
